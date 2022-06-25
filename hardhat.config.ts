@@ -10,11 +10,9 @@ module.exports = {
     hardhat: {
       chainId: 1337,
     },
-    // aurora: {
-    //   url: `https://aurora-testnet.infura.io/v3/${projectId}`,
+    // rinkeby: {
+    //   url: "https://rinkeby.infura.io/v3/345cca76a2414be0b86607b5db4b62dc",
     //   accounts: [privateKey]
-    // },
-    // mainnet: {
     // },
   },
   solidity: {

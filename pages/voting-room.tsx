@@ -26,15 +26,15 @@ const CreatorDashboard = () => {
     // If not fetch from provided API
     const data = await axios.get('http://localhost:3001');
     const candidatesFromBlockchain = data.data;
+    console.log(data)
 
     if (candidatesFromBlockchain.length) {
       setCandidates(candidatesFromBlockchain);
       setLoadingState(false);
       return;
     }
-    
-    const { data: { candidates: candidatesResponse } } = await axios.get('https://wakanda-task.3327.io/list');
 
+    const { data: { candidates: candidatesResponse } } = await axios.get('https://wakanda-task.3327.io/list');
     const signer = await getContractSigner();
     let contract = new ethers.Contract(votingaddress, VOTING.abi, signer)
     const indexedCandidates = candidatesResponse.map((item: any, index: number) => ({
@@ -85,7 +85,6 @@ const CreatorDashboard = () => {
       setShowTable(false);
       setVotingSuccessMsg('You have voted successfully!')
     } catch (error) {
-      // setInterval(() => handleVote(), 3000)
       setErrorMsg('Voting failed. You maybe already voted or do not have enough WKND.')
     }
   }, [userVote, WKNDInput]);

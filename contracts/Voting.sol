@@ -82,46 +82,46 @@ contract Voting is WakandaToken, ReentrancyGuard {
 
         electionCandidates[candidateId].voteCount += 1;
 
-        int256[3] memory winingCandidatesIds = returnWinningCandidates();
+        Candidate[] memory winningCandidates = returnWinningCandidates();
+
+        delete topThreeCandidates;
+
+        uint256 lengthOfCandidates;
+
+        if (winningCandidates.length >= 3) {
+            lengthOfCandidates = 3;
+        } else {
+            lengthOfCandidates = winningCandidates.length;
+        }
+
+        for (uint256 i = 0; i < lengthOfCandidates; i++) {
+            topThreeCandidates.push(
+                Candidate(
+                    winningCandidates[i].name,
+                    winningCandidates[i].age,
+                    winningCandidates[i].cult,
+                    winningCandidates[i].voteCount,
+                    winningCandidates[i].candidateId
+                )
+            );
+        }
 
         int256 timesNotFound = 0;
 
-        if (
-            // Check if each bigger than 3, because we always get [3]
-            // But if not real userId it will be -1
-            winingCandidatesIds[0] >= 0 &&
-            winingCandidatesIds[1] >= 0 &&
-            winingCandidatesIds[2] >= 0
-        ) {
-            bool isThereNewChalanger = timesNotFound == 3;
-
-            for (uint256 i = 0; i < winingCandidatesIds.length; i++) {
-                if (winingCandidatesIds[i] != int(candidateId)) {
+        if (winningCandidates.length >= 3) {
+            for (uint256 i = 0; i < lengthOfCandidates; i++) {
+                if (winningCandidates[i].candidateId != int256(candidateId)) {
                     timesNotFound++;
                 }
             }
+
+            bool isThereNewChalanger = timesNotFound == 3;
 
             if (isThereNewChalanger) {
                 emitEvent(candidateId);
             }
         } else {
             emitEvent(candidateId);
-        }
-
-        delete topThreeCandidates;
-
-        for (uint256 i = 0; i < winingCandidatesIds.length; i++) {
-            if (winingCandidatesIds[i] >= 0) {
-             topThreeCandidates.push(
-                    Candidate(
-                        electionCandidates[uint256(winingCandidatesIds[i])].name,
-                        electionCandidates[uint256(winingCandidatesIds[i])].age,
-                        electionCandidates[uint256(winingCandidatesIds[i])].cult,
-                        electionCandidates[uint256(winingCandidatesIds[i])].voteCount,
-                        electionCandidates[uint256(winingCandidatesIds[i])].candidateId
-                    )
-                );
-            }
         }
     }
 
@@ -135,59 +135,25 @@ contract Voting is WakandaToken, ReentrancyGuard {
         );
     }
 
-    function returnWinningCandidates() private view returns (int256[3] memory) {
+    function returnWinningCandidates()
+        private
+        view
+        returns (Candidate[] memory)
+    {
         require(electionCandidates.length > 0, "There are no Candidates");
 
-        int256 firstPlace = 0;
-        int256 secondPlace = 0;
-        int256 thirdPlace = 0;
+        Candidate[] memory candidatesCopy = electionCandidates;
 
-        int256 firstPlaceId = -1;
-        int256 secondPlaceId = -1;
-        int256 thirdPlaceId = -1;
-
-
-        for (uint256 i = 0; i < electionCandidates.length; i++) {
-            int256 candidatesVoteCount = electionCandidates[i].voteCount;
-            int256 candidateId = electionCandidates[i].candidateId;
-
-            if (candidatesVoteCount >= firstPlace) {
-                if (candidatesVoteCount == firstPlace) {
-                    thirdPlace = secondPlace;
-                    thirdPlaceId = secondPlaceId;
-
-                    secondPlace = firstPlace;
-                    secondPlaceId = firstPlaceId;
+        for (uint256 i = 1; i < candidatesCopy.length; i++) {
+            for (uint256 j = 0; j < i; j++) {
+                if (candidatesCopy[i].voteCount > candidatesCopy[j].voteCount) {
+                    Candidate memory candidate = candidatesCopy[i];
+                    candidatesCopy[i] = candidatesCopy[j];
+                    candidatesCopy[j] = candidate;
                 }
-                firstPlace = candidatesVoteCount;
-                firstPlaceId = candidateId;
-            } else if (
-                candidatesVoteCount < firstPlace &&
-                candidatesVoteCount > thirdPlace &&
-                candidatesVoteCount > 0
-            ) {
-                if (candidatesVoteCount == secondPlace) {
-                    thirdPlace = secondPlace;
-                    thirdPlaceId = secondPlaceId;
-                }
-                secondPlace = candidatesVoteCount;
-                secondPlaceId = candidateId;
-            } else if (
-                candidatesVoteCount < firstPlace &&
-                candidatesVoteCount < secondPlace &&
-                candidatesVoteCount > 0
-            ) {
-                thirdPlace = candidatesVoteCount;
-                thirdPlaceId = candidateId;
             }
         }
 
-        int256[3] memory winingCandidatesIds = [
-            firstPlaceId,
-            secondPlaceId,
-            thirdPlaceId
-        ];
-
-        return winingCandidatesIds;
+        return candidatesCopy;
     }
 }
