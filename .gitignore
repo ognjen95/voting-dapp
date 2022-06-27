@@ -36,7 +36,7 @@ yarn-error.log*
 
 node_modules
 .env
-.secret
+*.secret
 config
 coverage
 coverage.json

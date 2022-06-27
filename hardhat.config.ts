@@ -2,7 +2,6 @@ import "@nomiclabs/hardhat-waffle";
 import fs from "fs";
 
 const privateKey = fs.readFileSync(".secret").toString();
-const projectId = "b7dd9d8cb0564c538476aa4f11b4d012"; // this should go in .env
 
 module.exports = {
   defaultNetwork: "hardhat",
