@@ -9,6 +9,8 @@ type Props = {
   errorMsg: string,
   votingSuccessMsg: string,
   WKNDInput: number;
+  i: number;
+  isActive: boolean;
 }
 
 const CandidateCard: FunctionComponent<Props> = ({
@@ -18,7 +20,9 @@ const CandidateCard: FunctionComponent<Props> = ({
   setCandidateIdForVote,
   handleTokenValueChange,
   votingSuccessMsg,
-  errorMsg, }) => {
+  errorMsg,
+  i,
+  isActive }) => {
   return (
     <div className="border shadow rounded-xl bg-gray-100 overflow-hidden my-4 flex flex-col justify-between	">
 
@@ -34,12 +38,14 @@ const CandidateCard: FunctionComponent<Props> = ({
           <p className={`font-bold text-${votingSuccessMsg ? 'white' : 'red-500'}`}>{errorMsg || votingSuccessMsg}</p>
           : <div>
             <input
+              name={`${i}`}
               placeholder="Amount of WKND"
               type="number"
               className="border rounded p-4 w-full	mb-2"
               onChange={handleTokenValueChange}
+              disabled={!isActive}
             />
-            <button className="w-full bg-green-500 hover:bg-green-300 text-white font-bold py-2 px-12 rounded" onClick={setCandidateIdForVote}>
+            <button className="w-full bg-green-500 hover:bg-green-300 text-white font-bold py-2 px-12 rounded" disabled={!isActive} onClick={setCandidateIdForVote}>
               Vote
             </button>
           </div>

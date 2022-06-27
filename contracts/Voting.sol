@@ -67,12 +67,13 @@ contract Voting is WakandaToken, ReentrancyGuard {
     {
         Voter storage sender = voters[msg.sender];
 
+        require(!sender.voted, "Already voted, each voter can vote only once!");
+        
         require(
             getTokenBalance() >= 1 * 10**decimals(),
             "The Voter needs at least 1 WKND"
         );
 
-        require(!sender.voted, "Already voted, each voter can vote only once!");
 
         transfer(address(this), wkndAmount * 10**decimals());
 

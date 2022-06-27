@@ -10,6 +10,8 @@ import { CandidatesType } from '../types/candidates.types'
 import { VoteCard, WinnerTable } from '../components'
 import { getContractSigner } from './utils'
 
+const backendApiUrl = 'http://localhost:3001/';
+
 const CreatorDashboard = () => {
   const [candidates, setCandidates] = useState<CandidatesType[]>([])
   const [showTable, setShowTable] = useState(false);
@@ -17,52 +19,43 @@ const CreatorDashboard = () => {
   const [votingSuccessMsg, setVotingSuccessMsg] = useState('');
   const [loadingState, setLoadingState] = useState(true)
   const [userVote, setUserVote] = useState(-1);
+  const [activeInputField, setActiveInputField] = useState(-1);
   const [winners, setWinners] = useState<CandidatesType[]>([]);
   const [WKNDInput, setWKNDInput] = useState(0);
 
   const loadCandidates = useCallback(async () => {
-    // Check if there is candidates on blockChain
-    // If there is display them
-    // If not fetch from provided API
-    const data = await axios.get('http://localhost:3001');
-    const candidatesFromBlockchain = data.data;
-    console.log(data)
+    // Fetch candidates 
+    // If there are candidates already on BC preview it in UI
+    // If not get candidates from provided API and set candidates on BC them preview from BC in UI
+    const { data } = await axios.get(`${backendApiUrl}candidates`);
+    const candidates = data.candidates;
+    const isDataFromBC = data.isDataFromBc;
 
-    if (candidatesFromBlockchain.length) {
-      setCandidates(candidatesFromBlockchain);
+    if (isDataFromBC) {
+      setCandidates(candidates);
       setLoadingState(false);
       return;
     }
 
-    const { data: { candidates: candidatesResponse } } = await axios.get('https://wakanda-task.3327.io/list');
     const signer = await getContractSigner();
     let contract = new ethers.Contract(votingaddress, VOTING.abi, signer)
-    const indexedCandidates = candidatesResponse.map((item: any, index: number) => ({
-      name: ethers.utils.formatBytes32String(item.name),
-      cult: ethers.utils.formatBytes32String(item.cult),
-      age: item.age,
-      candidateId: index,
-      voteCount: 0,
-    }));
 
-    const settingOfCandidatesOnBC = await contract.setCandidates(indexedCandidates);
+    const settingOfCandidatesOnBC = await contract.setCandidates(candidates);
     await settingOfCandidatesOnBC.wait()
 
     loadCandidates();
   }, [])
 
 
-  const handleShowTable = useCallback(async () => {
+  const handleShowTable = async () => {
     // Fetch winners from API => Blockchain
-    const { data } = await axios.get(`http://localhost:3001/winners`);
+    const { data } = await axios.get(`${backendApiUrl}winners`);
 
-    if (!data.length) return;
-
-    setWinners(data);
-
-    setShowTable(prev => !prev)
-
-  }, []);
+    if (data.length) {
+      setWinners(data);
+      setShowTable(prev => !prev)
+    }
+  };
 
   const handleVote = useCallback(async () => {
     try {
@@ -72,15 +65,11 @@ const CreatorDashboard = () => {
       }
       const signer = await getContractSigner();
       const address = await signer.getAddress();
-      // const isContractAvailable = await axios.post(`http://localhost:3001/vote`, {
-      //   address,
-      //   userVote,
-      //   amount: WKNDInput
-      // }).catch((res) => {console.log(res)})
-      // if (!isContractAvailable) return;
-
-      const contract = new ethers.Contract(votingaddress, VOTING.abi, signer);
-      await contract.vote(userVote, WKNDInput);
+      await axios.post(`${backendApiUrl}vote`, {
+        address,
+        userVote,
+        amount: WKNDInput
+      })
       setUserVote(-1)
       setShowTable(false);
       setVotingSuccessMsg('You have voted successfully!')
@@ -89,7 +78,12 @@ const CreatorDashboard = () => {
     }
   }, [userVote, WKNDInput]);
 
-  const handleTokenValueChange = (e: ChangeEvent<unknown>) => { setWKNDInput(+(e.target as HTMLInputElement)?.value) };
+  const handleTokenValueChange = (e: ChangeEvent<unknown>) => {
+    const value = +(e.target as HTMLInputElement)?.value;
+    const name = +(e.target as HTMLInputElement)?.name;
+    setWKNDInput(value);
+    setActiveInputField(value ? name : -1);
+  };
 
   useEffect(() => {
     loadCandidates()
@@ -131,6 +125,7 @@ const CreatorDashboard = () => {
             candidates.map((candidate, i) => {
               const { name, cult, age } = candidate;
               const setCandidateIdForVote = () => { setUserVote(i) };
+              const isActive = activeInputField === i || activeInputField === -1;
 
               return (
                 <VoteCard
@@ -144,6 +139,8 @@ const CreatorDashboard = () => {
                     WKNDInput,
                     handleTokenValueChange,
                     votingSuccessMsg,
+                    isActive,
+                    i,
                   }}
                 />
               )
