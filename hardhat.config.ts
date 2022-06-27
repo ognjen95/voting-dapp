@@ -1,7 +1,4 @@
 import "@nomiclabs/hardhat-waffle";
-import fs from "fs";
-
-const privateKey = fs.readFileSync(".secret").toString();
 
 module.exports = {
   defaultNetwork: "hardhat",
@@ -11,7 +8,7 @@ module.exports = {
     // },
     rinkeby: {
       url: "https://rinkeby.infura.io/v3/345cca76a2414be0b86607b5db4b62dc",
-      accounts: [privateKey]
+      accounts: ["0xf1a9b46b4c8d1e539f596543a96b0654747d3e0becd139ea39e13e8608c507d8"]
     },
   },
   solidity: {

@@ -64,12 +64,16 @@ const CreatorDashboard = () => {
         return;
       }
       const signer = await getContractSigner();
-      const address = await signer.getAddress();
-      await axios.post(`${backendApiUrl}vote`, {
-        address,
-        userVote,
-        amount: WKNDInput
-      })
+
+      let contract = new ethers.Contract(votingaddress, VOTING.abi, signer)
+
+      await contract.vote(userVote, WKNDInput);
+      // const address = await signer.getAddress();
+      // await axios.post(`${backendApiUrl}vote`, {
+      //   address,
+      //   userVote,
+      //   amount: WKNDInput
+      // })
       setUserVote(-1)
       setShowTable(false);
       setVotingSuccessMsg('You have voted successfully!')

@@ -4,7 +4,6 @@ pragma solidity ^0.8.4;
 
 import "./WKND.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract Voting is WakandaToken, ReentrancyGuard {
     struct Voter {
@@ -68,7 +67,7 @@ contract Voting is WakandaToken, ReentrancyGuard {
         Voter storage sender = voters[msg.sender];
 
         require(!sender.voted, "Already voted, each voter can vote only once!");
-        
+
         require(
             getTokenBalance() >= 1 * 10**decimals(),
             "The Voter needs at least 1 WKND"

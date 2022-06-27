@@ -1,4 +1,4 @@
 
-  export const wkndaddress = "0x1D13fF25b10C9a6741DFdce229073bed652197c7"
-  export const votingaddress = "0x24d41dbc3d60d0784f8a937c59FBDe51440D5140"
+  export const wkndaddress = "0xf071404E47255b781B639d0aB76993f2e542eA02"
+  export const votingaddress = "0x0f3650CCE5E70f35E48e5C70cBb3705a1110aA5b"
   
